@@ -1,0 +1,19 @@
+   # Python
+   __pycache__/
+   *.py[cod]
+   *.pyo
+   *.pyd
+   *.db
+   *.sqlite3
+   *.egg-info/
+   venv/
+
+   # Node
+   node_modules/
+   npm-debug.log
+   package-lock.json
+
+   # IDEs
+   .vscode/
+   .idea/
+   *.swp
