@@ -10,6 +10,7 @@ import pyautogui  # Import pyautogui for GUI automation
 import subprocess  # Import subprocess to run shell commands
 import requests
 import logging
+import threading
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -99,7 +100,7 @@ def join_meeting(meeting_url):
 def start_openai_console():
     print("Starting OpenAI Realtime Console...")
     # Run the command to start the console
-    subprocess.run(["npm", "start"], cwd="/Users/yadinsoffer/ivvyai/ivprod/openai-realtime-console")
+    subprocess.run(["npm", "start"], cwd="/Users/yadinsoffer/ivvyai/openai-realtime-console")
 
 # Function to schedule multiple meetings
 def schedule_meetings():
@@ -120,14 +121,26 @@ def schedule_meetings():
             # Print only the required parameters
             print(f"Date: {meeting_date}, Time: {meeting_time}, Link: {meeting_url}")
         else:
-            # Optionally, you can print a warning if you want to keep track of skipped meetings
-            # print("Warning: 'link' is None or not found in meeting dictionary:", meeting)
             continue  # Skip this meeting or handle it as needed
 
+# Function to run the scheduling in a separate thread
+def run_scheduling():
     while True:
-        schedule.run_pending()
-        time.sleep(1)
+        schedule_meetings()  # Call the function to schedule meetings
+        logging.info("Waiting for 30 seconds before checking for new meetings...")
+        time.sleep(30)  # Wait for 30 seconds before rerunning
 
 # Example usage
 if __name__ == "__main__":
-    schedule_meetings()
+    # Start the scheduling in a separate thread
+    scheduling_thread = threading.Thread(target=run_scheduling)
+    scheduling_thread.daemon = True  # Allow the program to exit even if this thread is running
+    scheduling_thread.start()
+
+    # Main thread can continue doing other things or just wait
+    try:
+        while True:
+            schedule.run_pending()  # Check for any scheduled jobs to run
+            time.sleep(1)  # Sleep briefly to avoid busy waiting
+    except KeyboardInterrupt:
+        logging.info("Exiting the program.")
